@@ -1,12 +1,6 @@
 const inquirer = require("inquirer");
-const {
-  findRole,
-  findAllEmployees,
-  updateEmployeeRole,
-  deleteAnEmployee,
-} = require("./db");
+const db = require("./db");
 
-const db = require("./data");
 require("console.table");
 
 const init = () => {
@@ -15,7 +9,7 @@ const init = () => {
 
 const startMenu = () => {
   inquirer
-    .createPromptModule([
+    .prompt([
       {
         type: "list",
         name: "startMenu",
@@ -28,7 +22,6 @@ const startMenu = () => {
           "Add a department",
           "Add a role",
           "Update employee's role",
-          "Delete an employee",
           "I'm done for now, thanks.",
         ],
       },
@@ -172,47 +165,104 @@ const addEmp = () => {
 };
 
 const addDep = () => {
-  db.findAllEmployees()
-    .then(([rows]) => {
-      let employees = rows;
-      console.log("\n");
-      console.table(employees);
+  inquirer
+    .prompt([
+      {
+        name: "department",
+        type: "input",
+        message: "What is the department name?",
+      },
+    ])
+    .then((response) => {
+      let department = response.department;
+      db.createDepartment(department);
     })
-    .then(() => startMenu());
+    .then(() => console.log("Your department was added to the database!"))
+    .then(() => viewDepartments());
 };
+
 const addRole = () => {
-  db.findAllEmployees()
-    .then(([rows]) => {
-      let employees = rows;
-      console.log("\n");
-      console.table(employees);
-    })
-    .then(() => startMenu());
+  db.findDepartment().then(([rows]) => {
+    let departments = rows;
+    const depOptions = departments.map(
+      ({ department_id, department_name }) => ({
+        name: department_name,
+        value: department_id,
+      })
+    );
+    inquirer
+      .prompt([
+        {
+          name: "title",
+          type: "input",
+          message: "Enter the role you would like to add",
+        },
+        {
+          name: "salary",
+          type: "input",
+          message: "What is the salary for this role?",
+        },
+        {
+          name: "department_id",
+          type: "list",
+          message: "Which department is this role in?",
+          choices: depOptions,
+        },
+      ])
+      .then((response) => {
+        db.createRole(response)
+          .then(() => console.log("Your new role was added to the database!"))
+          .then(() => viewRoles());
+      });
+  });
 };
 const updateRole = () => {
-  db.findAllEmployees()
-    .then(([rows]) => {
-      let employees = rows;
-      console.log("\n");
-      console.table(employees);
-    })
-    .then(() => startMenu());
+  db.findAllEmployees().then(([rows]) => {
+    let employees = rows;
+    const employeeOptions = employees.map(({ id, first_name, last_name }) => ({
+      name: `${first_name} ${last_name}`,
+      value: id,
+    }));
+    inquirer
+      .prompt([
+        {
+          name: "id",
+          type: "list",
+          message: "Choose an employee to update",
+          choices: employeeOptions,
+        },
+      ])
+      .then((respsonse) => {
+        let employeeID = response.id;
+        db.findRole().then(([rows]) => {
+          let roles = rows;
+          const roleOptions = roles.map(({ id, title }) => ({
+            name: title,
+            value: id,
+          }));
+          inquirer
+            .prompt([
+              {
+                name: "role_id",
+                type: "list",
+                message: "What is the new role for this employee?",
+                choices: roleOptions,
+              },
+            ])
+            .then((response) => {
+              let roleID = response.role_id;
+              db.updateEmployeeRole(employeeID, roleID)
+                .then(() => console.log("Employee has been updated"))
+                .then(() => viewEmployees());
+            });
+        });
+      });
+  });
 };
-const delEmp = () => {
-  db.findAllEmployees()
-    .then(([rows]) => {
-      let employees = rows;
-      console.log("\n");
-      console.table(employees);
-    })
-    .then(() => startMenu());
-};
+
 const quit = () => {
-  db.findAllEmployees()
-    .then(([rows]) => {
-      let employees = rows;
-      console.log("\n");
-      console.table(employees);
-    })
-    .then(() => startMenu());
+  console.log("You're all done for now. Bye!");
+  process.exit();
 };
+
+init();
