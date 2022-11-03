@@ -12,7 +12,7 @@
   * [Questions](#questions)
   
   ## Installation
-  clone the repository
+  This application requires Node.js installed on the local machine. Clone or download the repository and make sure to         install the dependencies by running npm i in the terminal.
 
   ## Usage 
   run "npm start" in the terminal
@@ -21,7 +21,7 @@
   Click here to read about this license: [None]
 
   ## Contributing
-  fork the repo 
+  fork the repository and email me with any upgrades or changes
 
   ## Tests
   none
@@ -29,6 +29,7 @@
   ## Questions?
   * Github Username: [stephen-kern](https://github.com/stephen-kern)
   * Contact Email: stephenkern96@gmail.com
+  
+<img width="795" alt="employee-tracker" src="https://user-images.githubusercontent.com/94320530/199843329-02f097ef-ba6a-4b09-b328-a05150162c5e.png">
 
-https://user-images.githubusercontent.com/94320530/194608077-0d5c9733-46e7-41cc-9ea0-82f7ac51ddf1.mov
 
