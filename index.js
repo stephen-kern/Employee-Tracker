@@ -15,8 +15,8 @@ const startMenu = () => {
         name: "startMenu",
         message: "Choose an option",
         choices: [
-          "View employees",
-          "View departments",
+          "View all employees",
+          "View all departments",
           "View all roles",
           "Add an employee",
           "Add a department",
@@ -28,29 +28,29 @@ const startMenu = () => {
     ])
     .then((response) => {
       switch (response.startMenu) {
-        case "View employees":
-          viewEmployees();
+        case "View all employees":
+          viewAllEmployees();
           break;
-        case "View departments":
-          viewDepartments();
+        case "View all departments":
+          viewAllDepartments();
           break;
         case "View all roles":
-          viewRoles();
+          viewAllRoles();
           break;
         case "Add an employee":
-          addEmp();
+          addEmployee();
           break;
         case "Add a department":
-          addDep();
+          addDepartment();
           break;
         case "Add a role":
           addRole();
           break;
         case "Update employee's role":
-          updateRole();
+          updateEmployeeRole();
           break;
         case "Delete an employee":
-          delEmp();
+          delEmployee();
           break;
         case "I'm done for now, thanks.":
           quit();
@@ -59,46 +59,45 @@ const startMenu = () => {
     });
 };
 
-const viewEmployees = () => {
+const viewAllEmployees = () => {
   db.findAllEmployees()
     .then(([rows]) => {
       let employees = rows;
-      console.log("\n");
       console.table(employees);
     })
     .then(() => startMenu());
 };
 
-const viewDepartments = () => {
+const viewAllDepartments = () => {
   db.findDepartment()
     .then(([rows]) => {
       let departments = rows;
-      console.log("\n");
       console.table(departments);
     })
     .then(() => startMenu());
 };
-const viewRoles = () => {
+
+const viewAllRoles = () => {
   db.findRole()
     .then(([rows]) => {
       let roles = rows;
-      console.log("\n");
       console.table(roles);
     })
     .then(() => startMenu());
 };
-const addEmp = () => {
+
+const addEmployee = () => {
   inquirer
     .prompt([
       {
         name: "first_name",
         type: "input",
-        message: "What is your employees first name?",
+        message: "What is your employee's first name?",
       },
       {
         name: "last_name",
         type: "input",
-        message: "What is your employees last name?",
+        message: "What is your employee's last name?",
       },
     ])
     .then((response) => {
@@ -126,21 +125,21 @@ const addEmp = () => {
             console.log(roleID);
             db.findAllEmployees().then(([rows]) => {
               let employees = rows;
-              const manOptions = employees.map(
+              const managerOptions = employees.map(
                 ({ id, first_name, last_name }) => ({
                   name: `${first_name} ${last_name}`,
                   value: id,
                 })
               );
-              manOptions.unshift({ name: "None", value: null });
-              console.log(manOptions);
+              managerOptions.unshift({ name: "None", value: null });
+              console.log(managerOptions);
               inquirer
                 .prompt([
                   {
                     name: "manager_id",
                     type: "list",
                     message: "Who is the employee's manager?",
-                    choices: manOptions,
+                    choices: managerOptions,
                   },
                 ])
                 .then((response) => {
@@ -148,7 +147,7 @@ const addEmp = () => {
                   console.log(managerID);
                   let employees = {
                     first_name: firstName,
-                    last_name: last_name,
+                    last_name: lastName,
                     role_id: roleID,
                     manager_id: managerID,
                   };
@@ -156,7 +155,7 @@ const addEmp = () => {
                     .then(() =>
                       console.log("Your employee was added to the database!")
                     )
-                    .then(() => viewEmployees());
+                    .then(() => viewAllEmployees());
                 });
             });
           });
@@ -164,7 +163,7 @@ const addEmp = () => {
     });
 };
 
-const addDep = () => {
+const addDepartment = () => {
   inquirer
     .prompt([
       {
@@ -178,14 +177,13 @@ const addDep = () => {
       db.createDepartment(department);
     })
     .then(() => console.log("Your department was added to the database!"))
-    .then(() => viewDepartments());
+    .then(() => viewAllDepartments());
 };
 
 const addRole = () => {
   db.findDepartment().then(([rows]) => {
     let departments = rows;
-    const depOptions = departments.map(
-      ({ department_id, department_name }) => ({
+    const departmentOptions = departments.map(({ department_id, department_name }) => ({
         name: department_name,
         value: department_id,
       })
@@ -206,17 +204,17 @@ const addRole = () => {
           name: "department_id",
           type: "list",
           message: "Which department is this role in?",
-          choices: depOptions,
+          choices: departmentOptions,
         },
       ])
       .then((response) => {
         db.createRole(response)
           .then(() => console.log("Your new role was added to the database!"))
-          .then(() => viewRoles());
+          .then(() => viewAllRoles());
       });
   });
 };
-const updateRole = () => {
+const updateEmployeeRole = () => {
   db.findAllEmployees().then(([rows]) => {
     let employees = rows;
     const employeeOptions = employees.map(({ id, first_name, last_name }) => ({
@@ -226,26 +224,26 @@ const updateRole = () => {
     inquirer
       .prompt([
         {
-          name: "id",
+          name: "employee_id",
           type: "list",
           message: "Choose an employee to update",
           choices: employeeOptions,
         },
       ])
-      .then((respsonse) => {
-        let employeeID = response.id;
+      .then((response) => {
+        let employeeID = response.employee_id;
         db.findRole().then(([rows]) => {
           let roles = rows;
-          const roleOptions = roles.map(({ id, title }) => ({
+          const roleOptions = roles.map(({ role_id, title }) => ({
             name: title,
-            value: id,
+            value: role_id,
           }));
           inquirer
             .prompt([
               {
                 name: "role_id",
                 type: "list",
-                message: "What is the new role for this employee?",
+                message: "What is this employee's new role?",
                 choices: roleOptions,
               },
             ])
@@ -253,7 +251,7 @@ const updateRole = () => {
               let roleID = response.role_id;
               db.updateEmployeeRole(employeeID, roleID)
                 .then(() => console.log("Employee has been updated"))
-                .then(() => viewEmployees());
+                .then(() => viewAllEmployees());
             });
         });
       });
@@ -261,7 +259,7 @@ const updateRole = () => {
 };
 
 const quit = () => {
-  console.log("You're all done for now. Bye!");
+  console.log("Thanks for using Employee Tracker. Bye!");
   process.exit();
 };
 
